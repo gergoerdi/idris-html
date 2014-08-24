@@ -1,0 +1,3 @@
+[submodule "lightyear"]
+	path = lightyear
+	url = https://github.com/ziman/lightyear.git

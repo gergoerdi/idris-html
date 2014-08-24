@@ -1,0 +1,7 @@
+package idrishtml
+
+sourcedir=src
+
+opts = "-i ../lightyear"
+
+modules = HTML, HTML.Types, HTML.Pretty, HTML.Parser, HTML.Parser.HTML5, HTML.Provider
