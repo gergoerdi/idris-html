@@ -36,4 +36,4 @@ minimalHtml = """
 </html>
 """
 
---%provide (minimal : List Tag) with readString minimalHtml
+%provide (minimal : List Tag) with readString minimalHtml
