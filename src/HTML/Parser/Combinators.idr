@@ -6,6 +6,15 @@ import Lightyear.Strings
 
 %access public
 
+option : (Monad m) => a -> ParserT m s a -> ParserT m s a
+option x p          = p <|> return x
+
+optionMaybe : (Monad m) => ParserT m s a -> ParserT m s (Maybe a)
+optionMaybe p       = option Nothing (liftA Just p)
+
+choice : (Foldable t, Monad m) => t (ParserT m str a) -> ParserT m str a
+choice ps = foldr (<|>) empty ps
+
 oneOf : List Char -> Parser Char
 oneOf xs = satisfy (\x => elem x xs)
 

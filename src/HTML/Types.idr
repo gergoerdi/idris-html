@@ -1,4 +1,4 @@
-module Html.Types
+module HTML.Types
 
 %access public
 %default total
@@ -25,14 +25,15 @@ mutual
         Content : String -> Html
         Node : Element -> Html
 
-private
-emptyElement : Element
-emptyElement = MkElement "" [] []
+record HtmlDoc : Type where
+    MkHtmlDoc : (html : List Html) -> HtmlDoc
 
-elem : Tag -> List Attribute -> List Html -> Html
-elem t a c = Node $ MkElement t a c
 
 attr : String -> String -> Attribute
 attr k v = MkAttribute k v
 
+elem : Tag -> List Attribute -> List Html -> Html
+elem t a c = Node $ MkElement t a c
 
+doc : List Html -> HtmlDoc
+doc xs = MkHtmlDoc xs

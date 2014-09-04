@@ -20,6 +20,7 @@ private
 newline : String
 newline = "\r\n"
 
+private
 partial
 renderHtml : Html -> String
 renderHtml h = go 0 h
@@ -37,7 +38,7 @@ renderHtml h = go 0 h
                     "<" <+> (tag el) <+> renderAttributes (attributes el) <+> ">" <+> renderChildren (level + 1) (children el) <+> "</" <+> (tag el) <+> ">"
             partial
             renderChildren : Nat -> List Html -> String
-            renderChildren level children = Prelude.Foldable.foldr (\e, r => newline <+> indent level <+> e <+> newline <+> r) "" (map (go (level + 1)) children)
+            renderChildren level children = Prelude.Foldable.foldr (\e, r => newline <+> indent level <+> e <+> r) (newline <+> indent (level - 1) <+> "") (map (go level) children)
 
 
 
@@ -46,3 +47,9 @@ instance Show Html where
 
 instance Show Element where
     show el = renderHtml (Node el)
+
+instance Show HtmlDoc where
+    show (MkHtmlDoc html) = foldr accum "" html 
+        where
+            accum : Html -> String -> String
+            accum e acc = (renderHtml e) ++ newline ++ acc

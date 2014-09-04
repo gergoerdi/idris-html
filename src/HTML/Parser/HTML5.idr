@@ -39,15 +39,17 @@ Attribute = (String, String)
 
 data Tag = 
       TagOpen    String (List Attribute)
+    | TagVoid    String (List Attribute)
     | TagClose   String
     | TagText    String
     | TagComment String
 
 instance Show Tag where
-  show (TagOpen    s xs) = "TagOpen "    ++ s ++ show xs
-  show (TagClose   s   ) = "TagClose "   ++ s
-  show (TagText    s   ) = "TagText "    ++ s
-  show (TagComment s   ) = "TagComment " ++ s
+  show (TagOpen    s xs) = "TagOpen "    ++ "\"" ++ s ++ "\"" ++ " " ++ show xs
+  show (TagVoid    s xs) = "TagVoid "    ++ "\"" ++ s ++ "\"" ++ " " ++ show xs
+  show (TagClose   s   ) = "TagClose "   ++ "\"" ++ s ++ "\""
+  show (TagText    s   ) = "TagText "    ++ "\"" ++ s ++ "\""
+  show (TagComment s   ) = "TagComment " ++ "\"" ++ s ++ "\""
 
 quoted : Parser s -> Parser s
 quoted p = squote p <|> dquote p
@@ -124,11 +126,42 @@ startTag = do
     opt $ char '/'
     return $ TagOpen n a
 
+
+voidTags : List String
+voidTags = 
+  [
+    "area",
+    "base",
+    "br",
+    "col",
+    "command",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "keygen",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr"
+  ]
+
+voidTag : Parser Tag
+voidTag = do
+  n <- choice $ map stringNoCase voidTags
+  many htmlSpace
+  a <- attribute `sepBy` htmlSpace
+  many htmlSpace
+  opt $ char '/'
+  return $ TagVoid n a
+
 endTag : Parser Tag
 endTag = map (TagClose . pack) (char '/' $> many1 alphanum <$ many htmlSpace)
 
 element : Parser Tag
-element = comment <|> cdata <|> tag startTag <|> tag endTag <|> text
+element = comment <|> cdata <|> tag voidTag <|> tag startTag <|> tag endTag <|> text
 
 htmlDoc : Parser (List Tag)
 htmlDoc = do
