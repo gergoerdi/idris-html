@@ -35,10 +35,10 @@ renderHtml h = go 0 h
                 if length (children el) < 1 then
                     "<" <+> tag el <+> renderAttributes (attributes el) <+> "/>"
                 else
-                    "<" <+> (tag el) <+> renderAttributes (attributes el) <+> ">" <+> renderChildren (level + 1) (children el) <+> "</" <+> (tag el) <+> ">"
+                    "<" <+> (tag el) <+> renderAttributes (attributes el) <+> ">" <+> renderChildren level (children el) <+> "</" <+> (tag el) <+> ">"
             partial
             renderChildren : Nat -> List Html -> String
-            renderChildren level children = Prelude.Foldable.foldr (\e, r => newline <+> indent level <+> e <+> r) (newline <+> indent (level - 1) <+> "") (map (go level) children)
+            renderChildren level children = Prelude.Foldable.foldr (\e, r => newline <+> indent (level + 1) <+> e <+> r) (newline <+> indent level <+> "") (map (go (level + 1)) children)
 
 
 
