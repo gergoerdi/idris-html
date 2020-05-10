@@ -5,6 +5,7 @@ import Control.Monad.Identity
 
 import HTML.Parser.HTML5
 import HTML.Types
+import Lightyear.Strings using (parse)
 
 %access export
 %default total
@@ -81,6 +82,4 @@ convertTagsToHtml tags = let (a, s) = runIdentity $ runStateT (toHtml tags) [] i
     
 partial
 parseHtml : String -> Either String (List Html)
-parseHtml input = case parse htmlDoc input of
-                    Left x => Left x
-                    Right y => Right $ convertTagsToHtml y
+parseHtml input = map convertTagsToHtml $ parse htmlDoc input

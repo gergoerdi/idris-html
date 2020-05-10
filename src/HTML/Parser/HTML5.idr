@@ -29,6 +29,7 @@ module HTML.Parser.HTML5
 import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Strings
+import Lightyear.Char
 
 import HTML.Parser.Combinators
 
@@ -37,7 +38,7 @@ import HTML.Parser.Combinators
 Attribute : Type
 Attribute = (String, String)
 
-data Tag = 
+data Tag =
       TagOpen    String (List Attribute)
     | TagVoid    String (List Attribute)
     | TagClose   String
@@ -86,21 +87,22 @@ cdata = do
   pure $ TagText $ pack c
 
 text : Parser Tag
-text = map (TagText . pack) $ many1 $ satisfy (/= '<')
+text = map (TagText . pack) $ some $ satisfy (/= '<')
 
 attributeName : Parser String
-attributeName = map pack $ many1 $ satisfy (\x => not $ elem x (htmlSpaceList ++ ['\x00','\x22','\x27','>','/','=']))
+attributeName = map pack $ some $ satisfy (\x => not $ elem x (htmlSpaceList ++ ['\x00','\x22','\x27','>','/','=']))
 
 unqotedAVal : Parser String
-unqotedAVal = map pack $ many1 $ satisfy (\x => not $ elem x (htmlSpaceList ++ ['\x22','\x27','=','<','>','\x60']))
+unqotedAVal = map pack $ some $ satisfy (\x => not $ elem x (htmlSpaceList ++ ['\x22','\x27','=','<','>','\x60']))
+
+quoteAVal : Char -> Parser String
+quoteAVal q = between (char q) (char q) $ map pack $ many $ satisfy (/= q)
 
 singleQuoteAVal : Parser String
-singleQuoteAVal = 
-  char '\x22' $> (map pack $ many $ satisfy (/= '\x22')) <$ char '\x22'
+singleQuoteAVal = quoteAVal '\x22'
 
 doubleQuoteAVal : Parser String
-doubleQuoteAVal = 
-  char '\x27' $> (map pack $ many $ satisfy (/= '\x27')) <$ char '\x27'
+doubleQuoteAVal = quoteAVal '\x27'
 
 attributeValue : Parser Attribute
 attributeValue = do
@@ -115,11 +117,11 @@ attribute : Parser Attribute
 attribute = attributeValue <|> (map (\x => (x,"")) attributeName) 
 
 tag : Parser a -> Parser a
-tag p = char '<' $> p <$ char '>'
+tag = between (char '<') (char '>')
 
 startTag : Parser Tag
 startTag = do
-    n <- map pack $ many1 alphanum
+    n <- map pack $ some alphanum
     many htmlSpace
     a <- attribute `sepBy` htmlSpace
     many htmlSpace
@@ -158,7 +160,7 @@ voidTag = do
   pure $ TagVoid n a
 
 endTag : Parser Tag
-endTag = map (TagClose . pack) (char '/' $> many1 alphanum <$ many htmlSpace)
+endTag = map (TagClose . pack) $ between (char '/') (many htmlSpace) $ some alphanum
 
 element : Parser Tag
 element = comment <|> cdata <|> tag voidTag <|> tag startTag <|> tag endTag <|> text
