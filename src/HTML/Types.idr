@@ -1,23 +1,22 @@
 module HTML.Types
 
-%access public
+%access public export
 %default total
 
 Tag : Type
 Tag = String
 
-record Attribute : Type where
-    MkAttribute : (key : String) ->
-                  (value : String) ->
-                  Attribute
-
+record Attribute where
+    constructor MkAttribute
+    key : String
+    value : String
 
 mutual
-    record Element : Type where
-        MkElement : (tag : Tag) ->
-                    (attributes : List Attribute) ->
-                    (children : List Html) ->
-                    Element
+    record Element where
+        constructor MkElement
+        tag : Tag
+        attributes : List Attribute
+        children : List Html
 
     data Html : Type where
         CData : String -> Html
@@ -25,8 +24,9 @@ mutual
         Content : String -> Html
         Node : Element -> Html
 
-record HtmlDoc : Type where
-    MkHtmlDoc : (html : List Html) -> HtmlDoc
+record HtmlDoc where
+    constructor MkHtmlDoc
+    html : List Html
 
 
 attr : String -> String -> Attribute

@@ -4,10 +4,10 @@ import Lightyear.Core
 import Lightyear.Combinators
 import Lightyear.Strings
 
-%access public
+%access public export
 
 option : (Monad m) => a -> ParserT m s a -> ParserT m s a
-option x p          = p <|> return x
+option x p          = p <|> pure x
 
 optionMaybe : (Monad m) => ParserT m s a -> ParserT m s (Maybe a)
 optionMaybe p       = option Nothing (liftA Just p)
@@ -41,11 +41,10 @@ manyTill : Parser a -> Parser b -> Parser (List a)
 manyTill p e = scan
     where
         scan  = (do e; return (with List []))
-                    <|> do 
+                    <|> do
                         x <- p
                         xs <- scan
                         return (x::xs)
 
 many1 : Parser a -> Parser (List a)
 many1 p = do{ x <- p; xs <- many p; return (x::xs) }
-              

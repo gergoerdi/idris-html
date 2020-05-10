@@ -2,7 +2,7 @@ module HTML.Pretty
 
 import HTML.Types
 
-instance Show Attribute where
+Show Attribute where
     show attr = key attr <+> "=\"" <+> value attr <+> "\""
 
 private
@@ -42,13 +42,13 @@ renderHtml h = go 0 h
 
 
 
-instance Show Html where
+Show Html where
     show h = renderHtml h
 
-instance Show Element where
+Show Element where
     show el = renderHtml (Node el)
 
-instance Show HtmlDoc where
+Show HtmlDoc where
     show (MkHtmlDoc html) = foldr accum "" html 
         where
             accum : Html -> String -> String

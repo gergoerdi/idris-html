@@ -6,7 +6,7 @@ import Control.Monad.Identity
 import HTML.Parser.HTML5
 import HTML.Types
 
-%access public
+%access export
 %default total
 
 private
@@ -28,12 +28,12 @@ close : String -> HtmlParser Bool
 close tagToClose = do
     cur <- get
     case cur of
-        [] => return False
+        [] => pure False
         (x::xs) =>  if x == tagToClose then do
                         put $ with List xs
-                        return True 
-                    else 
-                        return False
+                        pure True
+                    else
+                        pure False
 private
 mapM : (Monad m, Traversable f, Functor f) => (a -> m b) -> f a -> m (f b)
 mapM p = sequence . map p
@@ -47,33 +47,33 @@ partial
 toHtml : List HTML.Parser.HTML5.Tag -> HtmlParser (List Html)
 toHtml xs = do
     (res, rest) <- toHtml' xs
-    return res
+    pure res
   where
     partial
     toHtml' : List HTML.Parser.HTML5.Tag -> HtmlParser (List Html, List HTML.Parser.HTML5.Tag)
-    toHtml' [] = return ([], [])
+    toHtml' [] = pure ([], [])
     toHtml' (x::xs) = case x of
                         TagOpen t attrs => do
                                             (children, rest) <- toHtml' xs
                                             (siblings, rest2) <- toHtml' rest
-                                            return $ ((elem t (map toAttr attrs) (children))::siblings, rest2)
+                                            pure ((elem t (map toAttr attrs) (children))::siblings, rest2)
                         TagVoid t attrs => do
                                             (siblings, rest) <- toHtml' xs
-                                            return $ ((elem t (map toAttr attrs) [])::siblings, rest)
+                                            pure ((elem t (map toAttr attrs) [])::siblings, rest)
                         TagText s => do
                             (siblings, rest) <- toHtml' xs
-                            return $ ((Content s)::siblings, rest)
+                            pure ((Content s)::siblings, rest)
                         TagComment s => do
                             (siblings, rest) <- toHtml' xs
-                            return $ ((Comment s)::siblings, rest)
+                            pure ((Comment s)::siblings, rest)
                         TagClose closeTag => do
                             res <- close closeTag
-                            if res == True then do
-                                return ([], xs)
+                            if res then do
+                                pure ([], xs)
                             else do
                                 (children, rest) <- toHtml' xs
-                                return (children, rest)
-    
+                                pure (children, rest)
+
 private
 partial
 convertTagsToHtml : List HTML.Parser.HTML5.Tag -> List Html

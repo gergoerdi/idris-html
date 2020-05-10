@@ -32,7 +32,7 @@ import Lightyear.Strings
 
 import HTML.Parser.Combinators
 
-%access public
+%access public export
 
 Attribute : Type
 Attribute = (String, String)
@@ -44,7 +44,7 @@ data Tag =
     | TagText    String
     | TagComment String
 
-instance Show Tag where
+Show Tag where
   show (TagOpen    s xs) = "TagOpen "    ++ "\"" ++ s ++ "\"" ++ " " ++ show xs
   show (TagVoid    s xs) = "TagVoid "    ++ "\"" ++ s ++ "\"" ++ " " ++ show xs
   show (TagClose   s   ) = "TagClose "   ++ "\"" ++ s ++ "\""
@@ -71,19 +71,19 @@ doctype = do
     many htmlSpace
     many $ satisfy (/= '>')
     char '>'
-    return () 
+    pure ()
 
 comment : Parser Tag
 comment = do
     string "<!--"
     c <- manyTill anyChar (string "-->")
-    return $ TagComment (pack c)
+    pure $ TagComment (pack c)
 
 cdata : Parser Tag
 cdata = do
   string "<![CDATA["
   c <- manyTill anyChar $ string "]]>"
-  return $ TagText $ pack c
+  pure $ TagText $ pack c
 
 text : Parser Tag
 text = map (TagText . pack) $ many1 $ satisfy (/= '<')
@@ -109,7 +109,7 @@ attributeValue = do
     char '='
     htmlSpaces
     v <- unqotedAVal <|> singleQuoteAVal <|> doubleQuoteAVal
-    return (n,v)
+    pure (n,v)
 
 attribute : Parser Attribute
 attribute = attributeValue <|> (map (\x => (x,"")) attributeName) 
@@ -124,7 +124,7 @@ startTag = do
     a <- attribute `sepBy` htmlSpace
     many htmlSpace
     opt $ char '/'
-    return $ TagOpen n a
+    pure $ TagOpen n a
 
 
 voidTags : List String
@@ -155,7 +155,7 @@ voidTag = do
   a <- attribute `sepBy` htmlSpace
   many htmlSpace
   opt $ char '/'
-  return $ TagVoid n a
+  pure $ TagVoid n a
 
 endTag : Parser Tag
 endTag = map (TagClose . pack) (char '/' $> many1 alphanum <$ many htmlSpace)
